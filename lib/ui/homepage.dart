@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:buscador_de_gifs/ui/gifpage.dart';
+import 'package:share/share.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,7 +18,7 @@ class _HomePageState extends State<HomePage> {
 
     http.Response response;
 
-    if (_search == null)
+    if(_search == null || _search.isEmpty)
     response = await http.get('https://api.giphy.com/v1/gifs/trending?api_key=rksTe2aCkB6uWN8moA0mQYHmy93A45kc&limit=20&rating=g');
     else 
     response = await http.get('https://api.giphy.com/v1/gifs/search?api_key=rksTe2aCkB6uWN8moA0mQYHmy93A45kc&q=$_search&limit=19&offset=$_offset&rating=g&lang=pt');
@@ -41,11 +44,19 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           if (_search == null || index < snapshot.data['data'].length)
           return GestureDetector(
-            child: Image.network(
-              snapshot.data['data'][index]['images']['fixed_height']['url'],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
+              child: FadeInImage.memoryNetwork(
+                placeholder: kTransparentImage, 
+                image: snapshot.data['data'][index]['images']['fixed_height']['url'],
+                height: 300.0,
+                fit: BoxFit.cover,
+                ),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GifPage(snapshot.data['data'][index]))
+              );
+            },
+            onLongPress: () {
+              Share.share(snapshot.data['data'][index]['images']['fixed_height']['url']);
+            },
           );
           else 
             return Container(
@@ -89,7 +100,7 @@ class _HomePageState extends State<HomePage> {
         title: Image.network('https://developers.giphy.com/static/img/dev-logo-lg.7404c00322a8.gif'),
         centerTitle: true,
       ),
-      backgroundColor: Color(0xFFd3d3d3),
+      backgroundColor: Color(0xFF808080),
       body: Column(
         children: <Widget>[
           Padding(
